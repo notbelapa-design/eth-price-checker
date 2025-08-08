@@ -448,6 +448,17 @@
   // Emoji particle system to add playful net art elements
   const emojiList = ['🤖','🚀','🎨','🔥','🧠','🔮','💎','🌈','🌀'];
   let emojiParticles = [];
+
+  // Palette inspired by Hiroshi Kawano's algorithmic art – vivid and contrasting
+  const kawanoPalette = [
+    [0, 80, 100],      // red
+    [30, 80, 100],     // orange
+    [60, 80, 100],     // yellow
+    [120, 80, 100],    // green
+    [200, 80, 100],    // blue
+    [280, 80, 100]     // violet
+  ];
+  let kawanoToggle = false;
   function setup() {
     const canvas = createCanvas(windowWidth, windowHeight);
     canvas.parent('p5-container');
@@ -509,6 +520,12 @@
       emojiParticles[i].update();
       emojiParticles[i].edges();
       emojiParticles[i].show();
+    }
+
+    // Occasionally overlay Kawano-inspired geometric pattern for absurd net art
+    // Pattern displays for a few seconds every ~20 seconds
+    if (frameCount % 1200 < 180) {
+      drawKawanoPattern();
     }
   }
 
@@ -597,6 +614,34 @@
     boost() {
       // random velocity burst on click
       this.vel.add(p5.Vector.random2D().mult(random(1, 3)));
+    }
+  }
+
+  /**
+   * Draw Kawano-inspired algorithmic pattern.
+   * Generates a grid of rotated rectangles with vivid colors and transparency.
+   * Utilises Perlin noise and block height to vary rotation and color selection.
+   */
+  function drawKawanoPattern() {
+    const spacing = 80;
+    noFill();
+    strokeWeight(2);
+    for (let x = 0; x < width + spacing; x += spacing) {
+      for (let y = 0; y < height + spacing; y += spacing) {
+        const noiseVal = noise(x * 0.005, y * 0.005, zOff);
+        const idx = floor(noiseVal * kawanoPalette.length) % kawanoPalette.length;
+        const [h, s, b] = kawanoPalette[idx];
+        stroke(h, s, b, 20);
+        push();
+        translate(x, y);
+        // rotation influenced by noise and Ethereum block height
+        let rot = noiseVal * TWO_PI;
+        if (blockData) rot += (blockData.height % 360) * 0.01;
+        rotate(rot);
+        const size = spacing * 0.6;
+        rect(-size / 2, -size / 2, size, size);
+        pop();
+      }
     }
   }
 </script>
