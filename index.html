@@ -216,6 +216,9 @@
   let currentPriceVal = 0;
   let priceDigits = [4, 0, 0, 0];
 
+  // Track last milestone for price halo bursts (0–1 range)
+  let lastMilestone = 0;
+
   // Fetch ETH price from CoinGecko
   async function fetchPrice() {
     const resp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
@@ -294,6 +297,17 @@
     } else {
       headerEl.textContent = 'ETH is below $4,000';
       document.body.classList.remove('happy');
+    }
+
+    // Trigger small confetti bursts when passing quarter milestones toward the threshold
+    const ratio = price / happyThreshold;
+    // milestone rounds down to nearest 0.25 (25%)
+    const milestone = Math.floor(ratio / 0.25) * 0.25;
+    if (milestone > lastMilestone && milestone <= 1) {
+      // launch a smaller confetti burst for intermediate milestones
+      const burst = confetti.create(document.getElementById('confetti-canvas'), { resize:true, useWorker:true });
+      burst({ particleCount:70, spread:70, origin:{ y:0.5 } });
+      lastMilestone = milestone;
     }
 
     // Update global price value and digit array for runtime art
@@ -686,22 +700,23 @@
    * as the price approaches or exceeds the threshold.
    */
   function drawPriceArt() {
-    const cx = width - 160;
-    const cy = 160;
-    const baseRadius = 30;
-    const maxExtra = 50;
+    // Position the halo around the top center (under the header)
+    const cx = width / 2;
+    const cy = 110;
+    const baseRadius = 40;
+    const maxExtra = 60;
     const segments = priceDigits.length;
     // Draw background ring
     noFill();
-    strokeWeight(4);
-    // Grey ring as background
-    stroke(0, 0, document.body.classList.contains('happy') ? 90 : 40, 30);
+    strokeWeight(3);
+    // Grey ring as background (more subtle)
+    stroke(0, 0, document.body.classList.contains('happy') ? 90 : 40, 20);
     circle(cx, cy, (baseRadius + maxExtra) * 2);
     // Foreground progress arc showing ratio of price to threshold
     const ratio = Math.min(currentPriceVal / happyThreshold, 1);
     // Choose hue based on happy state
-    let arcHue = document.body.classList.contains('happy') ? 120 : 0;
-    stroke(arcHue, 80, 100, 80);
+    let arcHue = document.body.classList.contains('happy') ? 140 : 0;
+    stroke(arcHue, 70, 100, 70);
     noFill();
     const diameter = (baseRadius + maxExtra) * 2;
     // Start at top (-90 degrees) and draw clockwise
@@ -709,9 +724,9 @@
     // Draw star polygon
     beginShape();
     const hueOffset = (artHueOffset + frameCount * 0.5) % 360;
-    stroke((hueOffset + (document.body.classList.contains('happy') ? 180 : 0)) % 360, 80, 100, 70);
-    strokeWeight(2);
-    fill((hueOffset + (document.body.classList.contains('happy') ? 180 : 0)) % 360, 60, 60, 20);
+    stroke((hueOffset + (document.body.classList.contains('happy') ? 180 : 0)) % 360, 70, 100, 50);
+    strokeWeight(1.5);
+    fill((hueOffset + (document.body.classList.contains('happy') ? 180 : 0)) % 360, 50, 60, 15);
     for (let i = 0; i < segments; i++) {
       const angle = TWO_PI * i / segments - HALF_PI;
       const digit = priceDigits[i];
