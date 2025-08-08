@@ -405,12 +405,13 @@
   }, 60000);
 
   // Navigation toggling between game and chart
-  document.addEventListener('DOMContentLoaded', () => {
+  // Attach event listeners immediately since the script runs after the DOM has loaded.
+  {
     const gameSection = document.getElementById('game-section');
     const chartSection = document.getElementById('chart-section');
     const btnGame = document.getElementById('nav-game');
     const btnChart = document.getElementById('nav-chart');
-    // Start with chart visible and button active
+    // Show chart by default and mark the chart button active
     chartSection.style.display = 'block';
     btnChart.classList.add('active');
     btnGame.addEventListener('click', () => {
@@ -425,7 +426,7 @@
       btnChart.classList.add('active');
       btnGame.classList.remove('active');
     });
-  });
+  }
 
   /**
    * Attention banner cycling
@@ -580,13 +581,15 @@
     rows = floor(height / scale);
     flowField = new Array(cols * rows);
     // create many particles
-    for (let i = 0; i < 600; i++) {
+    // reduce particle count for a less cluttered background
+    for (let i = 0; i < 400; i++) {
       particles[i] = new Particle();
     }
     background(0);
 
     // Create emoji particles floating across the canvas (reduced count for minimal clutter)
-    for (let i = 0; i < 20; i++) {
+    // reduce emoji particles to minimize visual clutter
+    for (let i = 0; i < 10; i++) {
       emojiParticles.push(new EmojiParticle());
     }
   }
@@ -773,7 +776,8 @@
     const cx = width / 2;
     const cy = 110;
     const baseRadius = 40;
-    const maxExtra = 60;
+    // Reduce the maximum extra radius to make the star smaller and less obtrusive
+    const maxExtra = 50;
     const segments = priceDigits.length;
     // Draw background ring
     noFill();
