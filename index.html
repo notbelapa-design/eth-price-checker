@@ -581,8 +581,8 @@
     rows = floor(height / scale);
     flowField = new Array(cols * rows);
     // create many particles
-    // reduce particle count for a less cluttered background
-    for (let i = 0; i < 400; i++) {
+    // further reduce particle count for a less cluttered background
+    for (let i = 0; i < 300; i++) {
       particles[i] = new Particle();
     }
     background(0);
@@ -642,8 +642,8 @@
     drawPriceArt();
 
     // Occasionally overlay Kawano-inspired geometric pattern for absurd net art
-    // Pattern displays briefly every ~30 seconds to avoid clutter
-    if (frameCount % 1800 < 120) {
+    // Pattern displays very briefly every minute to reduce clutter
+    if (frameCount % 3600 < 60) {
       drawKawanoPattern();
     }
   }
@@ -742,7 +742,8 @@
    * Utilises Perlin noise and block height to vary rotation and color selection.
    */
   function drawKawanoPattern() {
-    const spacing = 80;
+    // Increase spacing for fewer shapes, reducing visual density
+    const spacing = 120;
     noFill();
     strokeWeight(2);
     for (let x = 0; x < width + spacing; x += spacing) {
@@ -776,8 +777,8 @@
     const cx = width / 2;
     const cy = 110;
     const baseRadius = 40;
-    // Reduce the maximum extra radius to make the star smaller and less obtrusive
-    const maxExtra = 50;
+    // Reduce the maximum extra radius further to make the star smaller and less obtrusive
+    const maxExtra = 40;
     const segments = priceDigits.length;
     // Draw background ring
     noFill();
