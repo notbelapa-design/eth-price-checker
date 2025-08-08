@@ -60,7 +60,7 @@ body.happy::before {
   background: linear-gradient(60deg, #ff9a9e, #fecfef, #fad0c4, #fbc2eb);
   background-size: 400% 400%;
   animation: rainbow 20s linear infinite;
-  z-index: -1;
+  z-index: -2;
 }
 
 body.sad {
@@ -76,7 +76,7 @@ body.sad::before {
   height: 200%;
   background: radial-gradient(circle at center, #2d3748, #1a202c, #000000);
   animation: swirl 30s linear infinite;
-  z-index: -1;
+  z-index: -2;
 }
 
 @keyframes rainbow {
@@ -90,6 +90,49 @@ body.sad::before {
   to {transform: rotate(360deg);} 
 }
 
+/* Large CRUU message */
+#cruu-message {
+  position: fixed;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.3rem;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 3px;
+  line-height: 1.3;
+  max-width: 90%;
+  color: rgba(255,255,255,0.4);
+  text-shadow: 0 0 10px rgba(0,0,0,0.6);
+  z-index: 2;
+  pointer-events: none;
+}
+
+body.happy #cruu-message {
+  color: rgba(0,0,0,0.5);
+  text-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+
+/* Orb decorative element */
+#orb {
+  position: fixed;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.9), rgba(255,255,255,0) 70%);
+  animation: orbMove 40s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes orbMove {
+  0%   { top: 10%; left: 20%; transform: scale(0.8); }
+  25%  { top: 20%; left: 80%; transform: scale(1.2); }
+  50%  { top: 75%; left: 60%; transform: scale(1.0); }
+  75%  { top: 85%; left: 15%; transform: scale(1.3); }
+  100% { top: 30%; left: 50%; transform: scale(0.9); }
+}
+
 /* Party confetti canvas overlay */
 #confetti-canvas {
   position: fixed;
@@ -98,7 +141,7 @@ body.sad::before {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 1;
+  z-index: 0;
 }
 </style>
 </head>
@@ -110,6 +153,8 @@ body.sad::before {
 <div id="chart-container" style="display:none;">
   <canvas id="chart"></canvas>
 </div>
+<div id="cruu-message">THIS IS WHAT YOU WANTED RIGHT BUT YOU'RE NOT HERE YET SO WHAT HAPPENS WHEN IT HITS 4K SOMETHING MAGICAL</div>
+<div id="orb"></div>
 <canvas id="confetti-canvas"></canvas>
 <!-- Chart.js library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -185,19 +230,19 @@ function drawChart(prices) {
 
 function updateChartColors() {
   if(chart) {
-    chart.options.plugins.legend.labels.color = getComputedStyle(document.body).color;
-    chart.options.scales.x.ticks.color = getComputedStyle(document.body).color;
-    chart.options.scales.y.ticks.color = getComputedStyle(document.body).color;
+    const color = getComputedStyle(document.body).color;
+    chart.options.plugins.legend.labels.color = color;
+    chart.options.scales.x.ticks.color = color;
+    chart.options.scales.y.ticks.color = color;
     chart.update();
   }
 }
 
 function launchConfetti() {
   const myConfetti = confetti.create(document.getElementById('confetti-canvas'), { resize: true, useWorker: true });
-  // burst effect
   myConfetti({
-    particleCount: 200,
-    spread: 70,
+    particleCount: 300,
+    spread: 90,
     origin: { y: 0.6 }
   });
 }
