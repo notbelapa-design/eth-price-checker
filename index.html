@@ -62,6 +62,18 @@
       font-size: 1rem;
       opacity: 0.8;
     }
+
+    /* Rotating banner styling */
+    #banner {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-align: center;
+      color: #ffb3ff;
+      text-shadow: 0 0 5px rgba(255, 0, 255, 0.5);
+      transition: opacity 0.5s ease;
+    }
     /* Middle area: left message and Wordle board side‑by‑side */
     #middle {
       display: flex;
@@ -179,6 +191,8 @@
     <div id="emoji"></div>
     <h1 id="header">Checking ETH price...</h1>
     <p id="price"></p>
+    <!-- Rotating banner with cryptic phrases to pique curiosity -->
+    <div id="banner"></div>
   </div>
   <div id="middle">
     <div id="left-message" data-text=""></div>
@@ -300,6 +314,36 @@
     blockData = await fetchBlockData();
   }, 60000);
 
+  /**
+   * Attention banner cycling
+   * A set of cryptic phrases inspired by CRUU ethos and curiosity triggers.
+   * Rotates through the phrases every 12 seconds to keep viewers engaged.
+   */
+  const phrases = [
+    'BREATHE. BUILD. PLAY.',
+    'CURATE CHAOS 💎',
+    'MEMES ARE PROTOCOLS',
+    'ART IS CODE IS ART',
+    'HIDE IN PLAIN SIGHT',
+    'EMOJIS SPEAK LOUDER THAN WORDS',
+    'RUNTIME DREAMS',
+    'CHOOSE CURIOSITY OVER COMFORT',
+    'SHIP, SHIP, SHIP 🚀'
+  ];
+  let phraseIndex = 0;
+  function cycleBanner() {
+    const banner = document.getElementById('banner');
+    banner.style.opacity = 0;
+    setTimeout(() => {
+      banner.textContent = phrases[phraseIndex];
+      banner.style.opacity = 1;
+      phraseIndex = (phraseIndex + 1) % phrases.length;
+    }, 500);
+  }
+  // Start banner rotation
+  cycleBanner();
+  setInterval(cycleBanner, 12000);
+
   // Set CRUU message (all caps from user) and glitch overlay
   const cruuMessage = `THIS IS WHAT YOU WANTED RIGHT<br>BUT YOU'RE NOT HERE YET<br>SO WHAT HAPPENS<br>WHEN IT HITS 4K<br>SOMETHING MAGICAL`;
   const leftDiv = document.getElementById('left-message');
@@ -400,6 +444,10 @@
   let inc = 0.05;
   let zOff = 0;
   const scale = 20; // size of each flow field cell
+
+  // Emoji particle system to add playful net art elements
+  const emojiList = ['🤖','🚀','🎨','🔥','🧠','🔮','💎','🌈','🌀'];
+  let emojiParticles = [];
   function setup() {
     const canvas = createCanvas(windowWidth, windowHeight);
     canvas.parent('p5-container');
@@ -412,6 +460,11 @@
       particles[i] = new Particle();
     }
     background(0);
+
+    // Create emoji particles floating across the canvas
+    for (let i = 0; i < 40; i++) {
+      emojiParticles.push(new EmojiParticle());
+    }
   }
   function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
@@ -450,6 +503,18 @@
       particles[i].edges();
       particles[i].show();
     }
+
+    // Update and display emoji particles
+    for (let i = 0; i < emojiParticles.length; i++) {
+      emojiParticles[i].update();
+      emojiParticles[i].edges();
+      emojiParticles[i].show();
+    }
+  }
+
+  // Add a click interaction to energize emoji particles
+  function mousePressed() {
+    emojiParticles.forEach(ep => ep.boost());
   }
   class Particle {
     constructor() {
@@ -495,6 +560,43 @@
       if (this.pos.x < 0)    { this.pos.x = width; this.updatePrev(); }
       if (this.pos.y > height){ this.pos.y = 0; this.updatePrev(); }
       if (this.pos.y < 0)    { this.pos.y = height; this.updatePrev(); }
+    }
+  }
+
+  // EmojiParticle class: playful floating emojis that drift and bounce
+  class EmojiParticle {
+    constructor() {
+      this.pos = createVector(random(width), random(height));
+      this.vel = p5.Vector.random2D().mult(random(0.3, 0.8));
+      this.size = random(20, 36);
+      this.emoji = random(emojiList);
+    }
+    update() {
+      this.pos.add(this.vel);
+      // slowly wander by adjusting velocity with noise
+      const angle = noise(this.pos.x * 0.002, this.pos.y * 0.002, frameCount * 0.002) * TWO_PI * 2;
+      const dir = p5.Vector.fromAngle(angle);
+      this.vel.lerp(dir.mult(0.5), 0.02);
+    }
+    edges() {
+      if (this.pos.x > width || this.pos.x < 0) this.vel.x *= -1;
+      if (this.pos.y > height || this.pos.y < 0) this.vel.y *= -1;
+    }
+    show() {
+      push();
+      translate(this.pos.x, this.pos.y);
+      // Color shifts with happy state
+      let hueVal = (artHueOffset + frameCount * 0.3 + this.pos.x * 0.05) % 360;
+      if (document.body.classList.contains('happy')) hueVal = (hueVal + 120) % 360;
+      fill(hueVal, 80, 100);
+      noStroke();
+      textSize(this.size);
+      text(this.emoji, 0, 0);
+      pop();
+    }
+    boost() {
+      // random velocity burst on click
+      this.vel.add(p5.Vector.random2D().mult(random(1, 3)));
     }
   }
 </script>
