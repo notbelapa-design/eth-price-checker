@@ -63,8 +63,9 @@
       opacity: 0.8;
     }
 
-    /* Rotating banner styling */
+    /* Rotating banner styling (hidden by default to reduce clutter) */
     #banner {
+      display: none; /* hide banner to declutter the top area */
       margin-top: 1rem;
       font-size: 1.2rem;
       font-weight: 600;
@@ -582,14 +583,14 @@
     flowField = new Array(cols * rows);
     // create many particles
     // further reduce particle count for a less cluttered background
-    for (let i = 0; i < 300; i++) {
+    // decreased from 300 to 200 to lighten the flow field visuals
+    for (let i = 0; i < 200; i++) {
       particles[i] = new Particle();
     }
     background(0);
 
-    // Create emoji particles floating across the canvas (reduced count for minimal clutter)
-    // reduce emoji particles to minimize visual clutter
-    for (let i = 0; i < 10; i++) {
+    // Create emoji particles floating across the canvas (further reduced count for minimal clutter)
+    for (let i = 0; i < 5; i++) {
       emojiParticles.push(new EmojiParticle());
     }
   }
@@ -642,8 +643,8 @@
     drawPriceArt();
 
     // Occasionally overlay Kawano-inspired geometric pattern for absurd net art
-    // Pattern displays very briefly every minute to reduce clutter
-    if (frameCount % 3600 < 60) {
+    // Pattern displays very briefly every two minutes to reduce clutter further
+    if (frameCount % 7200 < 60) {
       drawKawanoPattern();
     }
   }
@@ -778,7 +779,8 @@
     const cy = 110;
     const baseRadius = 40;
     // Reduce the maximum extra radius further to make the star smaller and less obtrusive
-    const maxExtra = 40;
+    // reduce extra radius to make the star smaller and less obtrusive
+    const maxExtra = 30;
     const segments = priceDigits.length;
     // Draw background ring
     noFill();
@@ -798,9 +800,10 @@
     // Draw star polygon
     beginShape();
     const hueOffset = (artHueOffset + frameCount * 0.5) % 360;
-    stroke((hueOffset + (document.body.classList.contains('happy') ? 180 : 0)) % 360, 70, 100, 50);
-    strokeWeight(1.5);
-    fill((hueOffset + (document.body.classList.contains('happy') ? 180 : 0)) % 360, 50, 60, 15);
+    // Use subtler stroke and fill for the star to reduce visual dominance
+    stroke((hueOffset + (document.body.classList.contains('happy') ? 180 : 0)) % 360, 60, 80, 40);
+    strokeWeight(1);
+    fill((hueOffset + (document.body.classList.contains('happy') ? 180 : 0)) % 360, 40, 50, 10);
     for (let i = 0; i < segments; i++) {
       const angle = TWO_PI * i / segments - HALF_PI;
       const digit = priceDigits[i];
