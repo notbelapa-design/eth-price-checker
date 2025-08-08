@@ -93,6 +93,7 @@
       pointer-events: none;
       opacity: 0.7;
       mix-blend-mode: difference;
+      white-space: pre-line;
     }
     #left-message::before {
       text-shadow: -2px 0 #ff0066;
@@ -360,7 +361,8 @@
   const cruuMessage = `THIS IS WHAT YOU WANTED RIGHT<br>BUT YOU'RE NOT HERE YET<br>SO WHAT HAPPENS<br>WHEN IT HITS 4K<br>SOMETHING MAGICAL`;
   const leftDiv = document.getElementById('left-message');
   leftDiv.innerHTML = cruuMessage;
-  leftDiv.setAttribute('data-text', cruuMessage.replace(/<br>/g, ' '));
+  // Replace <br> with newlines for glitch pseudo elements
+  leftDiv.setAttribute('data-text', cruuMessage.replace(/<br>/g, '\n'));
 
   // Build empty Wordle grid
   const wordleContainer = document.getElementById('wordle');
