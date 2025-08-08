@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ETH Price Checker</title>
+<style>
+body {
+  margin:0;
+  padding:0;
+  font-family: Arial, Helvetica, sans-serif;
+  display:flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  transition: background-color 0.8s ease, color 0.8s ease;
+}
+body.happy {
+  background-color: #f1fdf5;
+  color: #0a662c;
+}
+body.sad {
+  background-color: #111827;
+  color: #e5e7eb;
+}
+#emoji {
+  font-size:6rem;
+  margin-bottom:1rem;
+}
+.happy #emoji {
+  animation:bounce 2s infinite;
+}
+.sad #emoji {
+  animation:float 2s infinite;
+}
+@keyframes bounce {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(10px); }
+}
+</style>
+</head>
+<body>
+<div id="emoji">⏳</div>
+<h1 id="status">Checking ETH price...</h1>
+<p id="price"></p>
+<p>(Prices update every minute. Data from CoinGecko.)</p>
+<script>
+async function fetchPrice() {
+  try {
+    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
+    const data = await response.json();
+    const price = data?.ethereum?.usd;
+    if (typeof price === 'number') {
+      document.getElementById('price').textContent = 'Current price: $' + price.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+      if (price >= 4000) {
+        document.body.classList.add('happy');
+        document.body.classList.remove('sad');
+        document.getElementById('emoji').textContent = '🥳';
+        document.getElementById('status').textContent = 'ETH is soaring!';
+      } else {
+        document.body.classList.add('sad');
+        document.body.classList.remove('happy');
+        document.getElementById('emoji').textContent = '😢';
+        document.getElementById('status').textContent = 'ETH is below $4,000';
+      }
+    }
+  } catch (err) {
+    document.getElementById('status').textContent = 'Error fetching price';
+    console.error(err);
+  }
+}
+fetchPrice();
+setInterval(fetchPrice, 60000);
+</script>
+</body>
+</html>
