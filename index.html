@@ -210,6 +210,12 @@
   let blockData = null;
   let artHueOffset = 0;
 
+  // Variables for price‑driven runtime art
+  // currentPriceVal stores the latest ETH price for use in drawings
+  // priceDigits holds an array of single digits derived from the price string (ignoring punctuation)
+  let currentPriceVal = 0;
+  let priceDigits = [4, 0, 0, 0];
+
   // Fetch ETH price from CoinGecko
   async function fetchPrice() {
     const resp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
@@ -289,12 +295,36 @@
       headerEl.textContent = 'ETH is below $4,000';
       document.body.classList.remove('happy');
     }
+
+    // Update global price value and digit array for runtime art
+    currentPriceVal = price;
+    updatePriceDigits(price);
+
     updateChartColors();
   }
 
   function launchConfetti() {
     const myConfetti = confetti.create(document.getElementById('confetti-canvas'), { resize:true, useWorker:true });
     myConfetti({ particleCount:200, spread:90, origin:{ y:0.6 } });
+  }
+
+  /**
+   * Update the global priceDigits array based on the latest price.
+   * Converts the price to a string, removes commas and decimals, and extracts
+   * up to six numeric characters to serve as radii for the price art.
+   */
+  function updatePriceDigits(price) {
+    try {
+      const str = price.toString().replace(/[^0-9]/g, '');
+      const digits = str.split('').map(ch => parseInt(ch, 10));
+      // If there are fewer than 5 digits, pad with zeros at the end
+      while (digits.length < 5) digits.push(0);
+      // Only keep the first 5 digits for the art
+      priceDigits = digits.slice(0, 5);
+    } catch (e) {
+      // Fallback to default digits
+      priceDigits = [4, 0, 0, 0, 0];
+    }
   }
 
   // Initialize entire experience
@@ -522,6 +552,9 @@
       emojiParticles[i].show();
     }
 
+    // Draw price‑driven runtime art after particles
+    drawPriceArt();
+
     // Occasionally overlay Kawano-inspired geometric pattern for absurd net art
     // Pattern displays for a few seconds every ~20 seconds
     if (frameCount % 1200 < 180) {
@@ -643,6 +676,51 @@
         pop();
       }
     }
+  }
+
+  /**
+   * Draw a runtime art piece influenced by the current ETH price.
+   * The art displays a star‑like polygon whose vertices are scaled based on
+   * the digits of the price. A surrounding arc fills proportionally to
+   * how close the price is to the happy threshold, giving a dopamine hit
+   * as the price approaches or exceeds the threshold.
+   */
+  function drawPriceArt() {
+    const cx = width - 160;
+    const cy = 160;
+    const baseRadius = 30;
+    const maxExtra = 50;
+    const segments = priceDigits.length;
+    // Draw background ring
+    noFill();
+    strokeWeight(4);
+    // Grey ring as background
+    stroke(0, 0, document.body.classList.contains('happy') ? 90 : 40, 30);
+    circle(cx, cy, (baseRadius + maxExtra) * 2);
+    // Foreground progress arc showing ratio of price to threshold
+    const ratio = Math.min(currentPriceVal / happyThreshold, 1);
+    // Choose hue based on happy state
+    let arcHue = document.body.classList.contains('happy') ? 120 : 0;
+    stroke(arcHue, 80, 100, 80);
+    noFill();
+    const diameter = (baseRadius + maxExtra) * 2;
+    // Start at top (-90 degrees) and draw clockwise
+    arc(cx, cy, diameter, diameter, -HALF_PI, -HALF_PI + ratio * TWO_PI);
+    // Draw star polygon
+    beginShape();
+    const hueOffset = (artHueOffset + frameCount * 0.5) % 360;
+    stroke((hueOffset + (document.body.classList.contains('happy') ? 180 : 0)) % 360, 80, 100, 70);
+    strokeWeight(2);
+    fill((hueOffset + (document.body.classList.contains('happy') ? 180 : 0)) % 360, 60, 60, 20);
+    for (let i = 0; i < segments; i++) {
+      const angle = TWO_PI * i / segments - HALF_PI;
+      const digit = priceDigits[i];
+      const r = baseRadius + (digit / 9) * maxExtra;
+      const x = cx + cos(angle) * r;
+      const y = cy + sin(angle) * r;
+      vertex(x, y);
+    }
+    endShape(CLOSE);
   }
 </script>
 </body>
