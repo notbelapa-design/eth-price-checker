@@ -4,77 +4,242 @@
 <meta charset="utf-8">
 <title>ETH Price Checker</title>
 <style>
+/* Base styles */
 body {
-  margin:0;
-  padding:0;
+  margin: 0;
+  padding: 0;
   font-family: Arial, Helvetica, sans-serif;
-  display:flex;
+  display: flex;
   flex-direction: column;
-  align-items:center;
-  justify-content:center;
-  min-height:100vh;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
   transition: background-color 0.8s ease, color 0.8s ease;
+  overflow-x: hidden;
+  position: relative;
 }
+
+h1 {
+  font-size: 2rem;
+  margin-top: 2rem;
+}
+
+p {
+  font-size: 1rem;
+  margin: 0.5rem;
+}
+
+#emoji {
+  font-size: 6rem;
+  margin-top: 3rem;
+}
+
+#chart-container {
+  width: 90%;
+  max-width: 700px;
+  margin-top: 2rem;
+}
+
+canvas {
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* Sad/Happy themes */
 body.happy {
-  background-color: #f1fdf5;
   color: #0a662c;
 }
+
+body.happy::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(60deg, #ff9a9e, #fecfef, #fad0c4, #fbc2eb);
+  background-size: 400% 400%;
+  animation: rainbow 20s linear infinite;
+  z-index: -1;
+}
+
 body.sad {
-  background-color: #111827;
   color: #e5e7eb;
 }
-#emoji {
-  font-size:6rem;
-  margin-bottom:1rem;
+
+body.sad::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, #2d3748, #1a202c, #000000);
+  animation: swirl 30s linear infinite;
+  z-index: -1;
 }
-.happy #emoji {
-  animation:bounce 2s infinite;
+
+@keyframes rainbow {
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
 }
-.sad #emoji {
-  animation:float 2s infinite;
+
+@keyframes swirl {
+  from {transform: rotate(0deg);} 
+  to {transform: rotate(360deg);} 
 }
-@keyframes bounce {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
-}
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(10px); }
+
+/* Party confetti canvas overlay */
+#confetti-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
 }
 </style>
 </head>
-<body>
+<body class="loading">
 <div id="emoji">⏳</div>
-<h1 id="status">Checking ETH price...</h1>
+<h1>Checking ETH price...</h1>
 <p id="price"></p>
-<p>(Prices update every minute. Data from CoinGecko.)</p>
+<p id="update-note">(Prices update every minute. Data from CoinGecko.)</p>
+<div id="chart-container" style="display:none;">
+  <canvas id="chart"></canvas>
+</div>
+<canvas id="confetti-canvas"></canvas>
+<!-- Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Confetti library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 <script>
-async function fetchPrice() {
-  try {
-    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
-    const data = await response.json();
-    const price = data?.ethereum?.usd;
-    if (typeof price === 'number') {
-      document.getElementById('price').textContent = 'Current price: $' + price.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-      if (price >= 4000) {
-        document.body.classList.add('happy');
-        document.body.classList.remove('sad');
-        document.getElementById('emoji').textContent = '🥳';
-        document.getElementById('status').textContent = 'ETH is soaring!';
-      } else {
-        document.body.classList.add('sad');
-        document.body.classList.remove('happy');
-        document.getElementById('emoji').textContent = '😢';
-        document.getElementById('status').textContent = 'ETH is below $4,000';
+async function fetchEthPrice() {
+  const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
+  const data = await response.json();
+  return data.ethereum.usd;
+}
+
+async function fetchChartData() {
+  const response = await fetch('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=7&interval=daily');
+  const data = await response.json();
+  return data.prices; // array of [timestamp, price]
+}
+
+let chart; // global chart instance
+function drawChart(prices) {
+  const ctx = document.getElementById('chart').getContext('2d');
+  const labels = prices.map(p => {
+    const date = new Date(p[0]);
+    return date.toLocaleDateString(undefined, { month:'short', day:'numeric' });
+  });
+  const priceData = prices.map(p => Math.round(p[1] * 100) / 100);
+  const thresholdData = priceData.map(() => 4000);
+  if(chart) {
+    chart.destroy();
+  }
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'ETH Price (USD)',
+          data: priceData,
+          borderColor: 'orange',
+          backgroundColor: 'rgba(255,165,0,0.2)',
+          tension: 0.3,
+          fill: false
+        },
+        {
+          label: 'Threshold ($4000)',
+          data: thresholdData,
+          borderColor: 'red',
+          borderDash: [5,5],
+          pointRadius: 0,
+          tension: 0,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      plugins: {
+        legend: {
+          labels: { color: getComputedStyle(document.body).color }
+        }
+      },
+      scales: {
+        y: {
+          ticks: { color: getComputedStyle(document.body).color },
+          beginAtZero: false
+        },
+        x: {
+          ticks: { color: getComputedStyle(document.body).color }
+        }
       }
     }
-  } catch (err) {
-    document.getElementById('status').textContent = 'Error fetching price';
-    console.error(err);
+  });
+}
+
+function updateChartColors() {
+  if(chart) {
+    chart.options.plugins.legend.labels.color = getComputedStyle(document.body).color;
+    chart.options.scales.x.ticks.color = getComputedStyle(document.body).color;
+    chart.options.scales.y.ticks.color = getComputedStyle(document.body).color;
+    chart.update();
   }
 }
-fetchPrice();
-setInterval(fetchPrice, 60000);
+
+function launchConfetti() {
+  const myConfetti = confetti.create(document.getElementById('confetti-canvas'), { resize: true, useWorker: true });
+  // burst effect
+  myConfetti({
+    particleCount: 200,
+    spread: 70,
+    origin: { y: 0.6 }
+  });
+}
+
+async function updatePage() {
+  const price = await fetchEthPrice();
+  const priceEl = document.getElementById('price');
+  priceEl.textContent = 'Current price: $' + price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const emojiEl = document.getElementById('emoji');
+  const headerEl = document.querySelector('h1');
+  const bodyEl = document.body;
+
+  if (price >= 4000) {
+    emojiEl.textContent = '🥳';
+    headerEl.textContent = 'ETH is above $4,000!';
+    bodyEl.classList.remove('sad');
+    bodyEl.classList.add('happy');
+    launchConfetti();
+  } else {
+    emojiEl.textContent = '😢';
+    headerEl.textContent = 'ETH is below $4,000';
+    bodyEl.classList.remove('happy');
+    bodyEl.classList.add('sad');
+  }
+  updateChartColors();
+}
+
+// initial load function
+async function init() {
+  try {
+    const prices = await fetchChartData();
+    drawChart(prices);
+    document.getElementById('chart-container').style.display = 'block';
+  } catch (e) {
+    console.error('Error loading chart data', e);
+  }
+  await updatePage();
+}
+
+// start updates
+init();
+setInterval(updatePage, 60000);
 </script>
 </body>
 </html>
