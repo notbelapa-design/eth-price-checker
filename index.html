@@ -104,7 +104,7 @@
       top: 0;
       width: 100%;
       pointer-events: none;
-      opacity: 0.7;
+      opacity: 0.4;
       mix-blend-mode: difference;
       white-space: pre-line;
     }
@@ -352,7 +352,7 @@
     if (milestone > lastMilestone && milestone <= 1) {
       // launch a smaller confetti burst for intermediate milestones
       const burst = confetti.create(document.getElementById('confetti-canvas'), { resize:true, useWorker:true });
-      burst({ particleCount:70, spread:70, origin:{ y:0.5 } });
+      burst({ particleCount:50, spread:70, origin:{ y:0.5 } });
       lastMilestone = milestone;
     }
 
@@ -365,7 +365,7 @@
 
   function launchConfetti() {
     const myConfetti = confetti.create(document.getElementById('confetti-canvas'), { resize:true, useWorker:true });
-    myConfetti({ particleCount:200, spread:90, origin:{ y:0.6 } });
+    myConfetti({ particleCount:120, spread:90, origin:{ y:0.6 } });
   }
 
   /**
@@ -583,14 +583,14 @@
     flowField = new Array(cols * rows);
     // create many particles
     // further reduce particle count for a less cluttered background
-    // decreased from 300 to 200 to lighten the flow field visuals
-    for (let i = 0; i < 200; i++) {
+    // decreased from 200 to 120 to lighten the flow field visuals
+    for (let i = 0; i < 120; i++) {
       particles[i] = new Particle();
     }
     background(0);
 
     // Create emoji particles floating across the canvas (further reduced count for minimal clutter)
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
       emojiParticles.push(new EmojiParticle());
     }
   }
@@ -644,7 +644,7 @@
 
     // Occasionally overlay Kawano-inspired geometric pattern for absurd net art
     // Pattern displays very briefly every two minutes to reduce clutter further
-    if (frameCount % 7200 < 60) {
+    if (frameCount % 14400 < 60) {
       drawKawanoPattern();
     }
   }
@@ -746,13 +746,13 @@
     // Increase spacing for fewer shapes, reducing visual density
     const spacing = 120;
     noFill();
-    strokeWeight(2);
+    strokeWeight(1);
     for (let x = 0; x < width + spacing; x += spacing) {
       for (let y = 0; y < height + spacing; y += spacing) {
         const noiseVal = noise(x * 0.005, y * 0.005, zOff);
         const idx = floor(noiseVal * kawanoPalette.length) % kawanoPalette.length;
         const [h, s, b] = kawanoPalette[idx];
-        stroke(h, s, b, 20);
+        stroke(h, s, b, 12);
         push();
         translate(x, y);
         // rotation influenced by noise and Ethereum block height
@@ -780,7 +780,7 @@
     const baseRadius = 40;
     // Reduce the maximum extra radius further to make the star smaller and less obtrusive
     // reduce extra radius to make the star smaller and less obtrusive
-    const maxExtra = 30;
+    const maxExtra = 20;
     const segments = priceDigits.length;
     // Draw background ring
     noFill();
