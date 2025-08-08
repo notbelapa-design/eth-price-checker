@@ -2,162 +2,176 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ETH Price Checker</title>
-  <!-- Chart.js for the price chart -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-  <!-- Canvas Confetti for celebration when price exceeds threshold -->
+  <title>ETH Price Checker – Net Art Edition</title>
+  <!-- Chart.js for the ETH price chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Canvas Confetti for celebratory animation -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <!-- p5.js for generative art -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/p5.min.js"></script>
   <style>
+    /* Basic reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', Arial, Helvetica, sans-serif;
+      font-family: 'Inter', Arial, sans-serif;
       color: #fff;
+      background: #010613;
       min-height: 100vh;
-      background-color: #050b22;
       overflow-x: hidden;
-      position: relative;
-      transition: background 2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 2rem;
     }
-    /* Happy state rainbow gradient background */
+
+    /* Happy state applies a rainbow gradient to the entire page */
     body.happy {
-      background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0, #7f00ff, #e100ff);
-      background-size: 600% 600%;
-      animation: gradientMove 10s ease infinite;
+      background: linear-gradient(45deg, #ff00cc, #00ffee, #0077ff, #ff005b, #00ff72);
+      background-size: 800% 800%;
+      animation: rainbowShift 20s ease infinite;
     }
-    @keyframes gradientMove {
+    @keyframes rainbowShift {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-    /* Network canvas behind everything */
-    #network-canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -2;
-      pointer-events: none;
-    }
-    /* Container to center content and provide symmetry */
+
+    /* Container for symmetric layout */
     #container {
+      width: 100%;
       max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      z-index: 1;
-      position: relative;
+      z-index: 2;
     }
     #top {
       text-align: center;
       margin-bottom: 2rem;
     }
     #emoji {
-      font-size: 5rem;
+      font-size: 4rem;
       margin-bottom: 0.5rem;
     }
     #header {
-      margin: 0;
       font-size: 2rem;
     }
     #price {
-      font-size: 1.1rem;
-      margin-top: 0.3rem;
+      font-size: 1rem;
+      opacity: 0.8;
     }
+    /* Middle area: left message and Wordle board side‑by‑side */
     #middle {
       display: flex;
       justify-content: space-between;
       width: 100%;
-      margin-bottom: 2rem;
       flex-wrap: wrap;
+      margin-bottom: 2rem;
     }
-    /* Left message styling with slight glitch effect using layered shadows */
+    /* Left message with CRUU aesthetic: large, uppercase, glitchy */
     #left-message {
       flex: 1;
+      min-width: 280px;
       margin-right: 1rem;
-      font-size: 2rem;
-      line-height: 1.3;
-      max-width: 50%;
+      font-size: 1.8rem;
+      line-height: 1.25;
       text-transform: uppercase;
       position: relative;
+      /* subtle shadow for depth */
+      text-shadow: 0 0 5px rgba(255,255,255,0.2);
     }
-    #left-message::after,
-    #left-message::before {
+    /* Glitch layers using pseudo‑elements */
+    #left-message::before,
+    #left-message::after {
       content: attr(data-text);
       position: absolute;
       left: 0;
       top: 0;
       width: 100%;
-      overflow: hidden;
-      mix-blend-mode: difference;
-      opacity: 0.7;
       pointer-events: none;
+      opacity: 0.7;
+      mix-blend-mode: difference;
     }
-    /* Slight color offsets for glitch layers */
     #left-message::before {
-      text-shadow: -2px 0 red;
-      animation: glitchShift1 2s infinite linear alternate-reverse;
+      text-shadow: -2px 0 #ff0066;
+      animation: glitchX 3s linear infinite;
     }
     #left-message::after {
-      text-shadow: 2px 0 cyan;
-      animation: glitchShift2 3s infinite linear alternate-reverse;
+      text-shadow: 2px 0 #00f5ff;
+      animation: glitchY 2.5s linear infinite;
     }
-    @keyframes glitchShift1 {
-      0% { transform: translate(0px, 0px); }
-      20% { transform: translate(-2px, -1px); }
-      40% { transform: translate(2px, 1px); }
-      60% { transform: translate(-1px, 2px); }
-      80% { transform: translate(1px, -2px); }
-      100% { transform: translate(0px, 0px); }
+    @keyframes glitchX {
+      0%   { transform: translate(0, 0); }
+      25%  { transform: translate(-1px, -2px); }
+      50%  { transform: translate(2px, 1px); }
+      75%  { transform: translate(-2px, 2px); }
+      100% { transform: translate(0, 0); }
     }
-    @keyframes glitchShift2 {
-      0% { transform: translate(0px, 0px); }
-      25% { transform: translate(1px, -2px); }
-      50% { transform: translate(-1px, 2px); }
-      75% { transform: translate(2px, 1px); }
-      100% { transform: translate(0px, 0px); }
+    @keyframes glitchY {
+      0%   { transform: translate(0, 0); }
+      20%  { transform: translate(1px, -1px); }
+      40%  { transform: translate(-1px, 1px); }
+      60%  { transform: translate(1px, 2px); }
+      80%  { transform: translate(-2px, -2px); }
+      100% { transform: translate(0, 0); }
     }
-    /* Wordle board on right */
+    /* Wordle board styling */
     #wordle {
       flex: 1;
-      max-width: 50%;
+      min-width: 280px;
       display: grid;
       grid-template-rows: repeat(6, auto);
-      gap: 0.4rem;
+      gap: 0.5rem;
       justify-content: center;
     }
     .wordle-row {
       display: flex;
-      gap: 0.4rem;
+      gap: 0.5rem;
       justify-content: center;
     }
     .wordle-tile {
       width: 3rem;
       height: 3rem;
-      border: 2px solid #555;
+      border: 2px solid #444;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.5rem;
       font-weight: bold;
-      text-transform: uppercase;
       background: rgba(255,255,255,0.05);
-      color: #eee;
+      color: #f5f5f5;
+      text-transform: uppercase;
     }
+    /* Colors for evaluated tiles */
+    .tile-correct { background:#538d4e; border-color:#538d4e; color:#fff; }
+    .tile-present { background:#b59f3b; border-color:#b59f3b; color:#fff; }
+    .tile-absent { background:#3a3a3c; border-color:#3a3a3c; color:#fff; }
+
     /* Chart container styling */
     #chart-container {
       width: 100%;
       max-width: 900px;
-      margin-top: 1rem;
       display: none;
+    }
+
+    /* p5 canvas should sit behind content */
+    #p5-container canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+      z-index: 0;
+      pointer-events: none;
+      /* blending to unify with background */
+      mix-blend-mode: screen;
     }
   </style>
 </head>
 <body>
-<canvas id="network-canvas"></canvas>
+<div id="p5-container"></div>
 <div id="container">
   <div id="top">
     <div id="emoji"></div>
@@ -172,314 +186,314 @@
     <canvas id="chart"></canvas>
   </div>
 </div>
-<!-- Canvas for confetti; hidden until triggered -->
+<!-- Confetti canvas (used internally by confetti library) -->
 <canvas id="confetti-canvas"></canvas>
+
 <script>
-const happyThreshold = 4000; // price threshold for happy state
+  const happyThreshold = 4000;
+  let blockData = null;
+  let artHueOffset = 0;
 
-// Fetch current ETH price
-async function fetchPrice() {
-  const resp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
-  const data = await resp.json();
-  return data.ethereum.usd;
-}
-
-// Fetch historical prices for chart (7 days)
-async function fetchChartData() {
-  const resp = await fetch('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=7&interval=daily');
-  const data = await resp.json();
-  return data.prices;
-}
-
-let chart; // Chart.js instance
-
-async function drawChart(prices) {
-  const ctx = document.getElementById('chart').getContext('2d');
-  const labels = prices.map(p => {
-    const d = new Date(p[0]);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  });
-  const priceData = prices.map(p => Math.round(p[1] * 100) / 100);
-  const thresholdData = labels.map(() => happyThreshold);
-  if (chart) chart.destroy();
-  chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: 'ETH Price (USD)',
-          data: priceData,
-          borderColor: 'orange',
-          backgroundColor: 'rgba(255,165,0,0.2)',
-          tension: 0.3,
-        },
-        {
-          label: 'Threshold ($4000)',
-          data: thresholdData,
-          borderColor: 'red',
-          borderDash: [5, 5],
-          fill: false,
-        },
-      ],
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: false,
-          ticks: {
-            color: getComputedStyle(document.body).color,
-          },
-        },
-        x: {
-          ticks: {
-            color: getComputedStyle(document.body).color,
-          },
-        },
-      },
-      plugins: {
-        legend: {
-          labels: {
-            color: getComputedStyle(document.body).color,
-          },
-        },
-      },
-    },
-  });
-}
-
-function updateChartColors() {
-  if (chart) {
-    const color = getComputedStyle(document.body).color;
-    chart.options.plugins.legend.labels.color = color;
-    chart.options.scales.x.ticks.color = color;
-    chart.options.scales.y.ticks.color = color;
-    chart.update();
+  // Fetch ETH price from CoinGecko
+  async function fetchPrice() {
+    const resp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
+    const data = await resp.json();
+    return data.ethereum.usd;
   }
-}
 
-// Update page based on current price
-async function updatePage() {
-  const price = await fetchPrice();
-  document.getElementById('price').textContent = 'Current price: $' + price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const emojiEl = document.getElementById('emoji');
-  const headerEl = document.getElementById('header');
-  if (price >= happyThreshold) {
-    emojiEl.textContent = '🥳';
-    headerEl.textContent = 'ETH is above $4,000!';
-    document.body.classList.add('happy');
-    launchConfetti();
-  } else {
-    emojiEl.textContent = '😢';
-    headerEl.textContent = 'ETH is below $4,000';
-    document.body.classList.remove('happy');
+  // Fetch 7‑day historical prices for chart
+  async function fetchChartData() {
+    const resp = await fetch('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=7&interval=daily');
+    const data = await resp.json();
+    return data.prices;
   }
-  updateChartColors();
-}
 
-// Launch confetti when price is above threshold
-function launchConfetti() {
-  const myConfetti = confetti.create(document.getElementById('confetti-canvas'), { resize: true, useWorker: true });
-  myConfetti({
-    particleCount: 200,
-    spread: 90,
-    origin: { y: 0.6 },
-  });
-}
-
-// Initialize page
-async function init() {
-  const prices = await fetchChartData();
-  drawChart(prices);
-  document.getElementById('chart-container').style.display = 'block';
-  updatePage();
-}
-init();
-// Refresh price every minute
-setInterval(updatePage, 60000);
-
-// Set the left-side message (CRUU style)
-const leftMessage = `THIS IS WHAT YOU WANTED RIGHT<br>BUT YOU'RE NOT HERE YET<br>SO WHAT HAPPENS<br>WHEN IT HITS 4K<br>SOMETHING MAGICAL`;
-const leftEl = document.getElementById('left-message');
-// inject HTML with breaks for the visual layout
-leftEl.innerHTML = leftMessage;
-// also set the data-text attribute used by glitch layers (remove <br> tags)
-leftEl.setAttribute('data-text', leftMessage.replace(/<br>/g, ' '));
-
-// Build Wordle board
-const wordleContainer = document.getElementById('wordle');
-for (let r = 0; r < 6; r++) {
-  const rowDiv = document.createElement('div');
-  rowDiv.className = 'wordle-row';
-  for (let c = 0; c < 5; c++) {
-    const tile = document.createElement('div');
-    tile.className = 'wordle-tile';
-    rowDiv.appendChild(tile);
-  }
-  wordleContainer.appendChild(rowDiv);
-}
-
-// Wordle game logic
-const targetWord = 'HAVEN';
-let currentRow = 0;
-let currentTile = 0;
-const guesses = Array(6).fill('');
-document.addEventListener('keydown', function(event) {
-  const rows = wordleContainer.children;
-  if (event.key === 'Backspace') {
-    if (currentTile > 0) {
-      currentTile--;
-      guesses[currentRow] = guesses[currentRow].slice(0, -1);
-      const tile = rows[currentRow].children[currentTile];
-      tile.textContent = '';
-      tile.style = '';
-    }
-  } else if (event.key === 'Enter') {
-    if (currentTile === 5) {
-      evaluateGuess();
-    }
-  } else if (/^[a-zA-Z]$/.test(event.key)) {
-    if (currentTile < 5) {
-      const letter = event.key.toUpperCase();
-      guesses[currentRow] += letter;
-      const tile = rows[currentRow].children[currentTile];
-      tile.textContent = letter;
-      currentTile++;
+  // Fetch latest Ethereum block data using AllOrigins to bypass CORS
+  async function fetchBlockData() {
+    try {
+      const url = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://api.blockcypher.com/v1/eth/main');
+      const resp = await fetch(url);
+      const result = await resp.json();
+      const parsed = JSON.parse(result.contents);
+      return parsed;
+    } catch(err) {
+      console.error('Block data fetch error', err);
+      return null;
     }
   }
-});
 
-function evaluateGuess() {
-  const guess = guesses[currentRow];
-  const rowTiles = wordleContainer.children[currentRow].children;
-  // Count letters in target word
-  const letterCount = {};
-  for (const ch of targetWord) {
-    letterCount[ch] = (letterCount[ch] || 0) + 1;
-  }
-  const statuses = Array(5).fill('absent');
-  // First pass: correct positions
-  for (let i = 0; i < 5; i++) {
-    if (guess[i] === targetWord[i]) {
-      statuses[i] = 'correct';
-      letterCount[guess[i]]--;
-    }
-  }
-  // Second pass: present letters
-  for (let i = 0; i < 5; i++) {
-    if (statuses[i] !== 'correct' && targetWord.includes(guess[i]) && letterCount[guess[i]] > 0) {
-      statuses[i] = 'present';
-      letterCount[guess[i]]--;
-    }
-  }
-  // Apply colors based on statuses
-  for (let i = 0; i < 5; i++) {
-    const tile = rowTiles[i];
-    if (statuses[i] === 'correct') {
-      tile.style.background = '#538d4e';
-      tile.style.borderColor = '#538d4e';
-      tile.style.color = '#fff';
-    } else if (statuses[i] === 'present') {
-      tile.style.background = '#b59f3b';
-      tile.style.borderColor = '#b59f3b';
-      tile.style.color = '#fff';
-    } else {
-      tile.style.background = '#3a3a3c';
-      tile.style.borderColor = '#3a3a3c';
-      tile.style.color = '#fff';
-    }
-  }
-  if (guess === targetWord) {
-    setTimeout(() => alert('Congratulations! You guessed the word!'), 100);
-    document.removeEventListener('keydown', arguments.callee);
-  } else {
-    currentRow++;
-    currentTile = 0;
-    if (currentRow >= 6) {
-      setTimeout(() => alert('Game over! The word was ' + targetWord), 100);
-      document.removeEventListener('keydown', arguments.callee);
-    }
-  }
-}
-
-// Start the network art background effect
-startNetworkArt();
-
-// Matrix rain effect for cryptic background
-function startNetworkArt() {
-  const canvas = document.getElementById('network-canvas');
-  const ctx = canvas.getContext('2d');
-  let width = (canvas.width = window.innerWidth);
-  let height = (canvas.height = window.innerHeight);
-  window.addEventListener('resize', () => {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-    initNodes();
-  });
-  let nodes = [];
-  const nodeCount = 80;
-  function initNodes() {
-    nodes = [];
-    for (let i = 0; i < nodeCount; i++) {
-      nodes.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-      });
-    }
-  }
-  initNodes();
-  function draw() {
-    ctx.clearRect(0, 0, width, height);
-    const happy = document.body.classList.contains('happy');
-    // subtle fade background
-    ctx.fillStyle = happy ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.05)';
-    ctx.fillRect(0, 0, width, height);
-    // update node positions
-    nodes.forEach((node) => {
-      node.x += node.vx;
-      node.y += node.vy;
-      if (node.x < 0 || node.x > width) node.vx *= -1;
-      if (node.y < 0 || node.y > height) node.vy *= -1;
+  let chartInstance;
+  async function drawChart(prices) {
+    const ctx = document.getElementById('chart').getContext('2d');
+    const labels = prices.map(p => {
+      const d = new Date(p[0]);
+      return d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
     });
-    // draw connections
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const dx = nodes[i].x - nodes[j].x;
-        const dy = nodes[i].y - nodes[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const maxDist = 150;
-        if (dist < maxDist) {
-          const alpha = 1 - dist / maxDist;
-          if (happy) {
-            // colorful connections in happy state
-            const r = Math.floor(150 + 100 * Math.random());
-            const g = Math.floor(150 + 100 * Math.random());
-            const b = Math.floor(150 + 100 * Math.random());
-            ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
-          } else {
-            ctx.strokeStyle = `rgba(100,150,255,${alpha})`;
-          }
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(nodes[i].x, nodes[i].y);
-          ctx.lineTo(nodes[j].x, nodes[j].y);
-          ctx.stroke();
-        }
+    const priceData = prices.map(p => Math.round(p[1] * 100) / 100);
+    const thresholdData = labels.map(() => happyThreshold);
+    if (chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels: labels,
+        datasets:[
+          { label:'ETH Price (USD)', data: priceData, borderColor:'#ffa500', backgroundColor:'rgba(255,165,0,0.2)', tension:0.3 },
+          { label:'Threshold ($4000)', data: thresholdData, borderColor:'red', borderDash:[5,5], fill:false }
+        ]
+      },
+      options:{
+        scales:{
+          x:{ ticks:{ color:getComputedStyle(document.body).color } },
+          y:{ ticks:{ color:getComputedStyle(document.body).color } }
+        },
+        plugins:{ legend:{ labels:{ color:getComputedStyle(document.body).color } } }
+      }
+    });
+  }
+
+  function updateChartColors() {
+    if (chartInstance) {
+      const color = getComputedStyle(document.body).color;
+      chartInstance.options.plugins.legend.labels.color = color;
+      chartInstance.options.scales.x.ticks.color = color;
+      chartInstance.options.scales.y.ticks.color = color;
+      chartInstance.update();
+    }
+  }
+
+  async function updatePage() {
+    const price = await fetchPrice();
+    document.getElementById('price').textContent = 'Current price: $' + price.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+    const headerEl = document.getElementById('header');
+    if (price >= happyThreshold) {
+      headerEl.textContent = 'ETH is above $4,000!';
+      document.body.classList.add('happy');
+      launchConfetti();
+    } else {
+      headerEl.textContent = 'ETH is below $4,000';
+      document.body.classList.remove('happy');
+    }
+    updateChartColors();
+  }
+
+  function launchConfetti() {
+    const myConfetti = confetti.create(document.getElementById('confetti-canvas'), { resize:true, useWorker:true });
+    myConfetti({ particleCount:200, spread:90, origin:{ y:0.6 } });
+  }
+
+  // Initialize entire experience
+  async function init() {
+    // Load block data once at start
+    blockData = await fetchBlockData();
+    // Draw chart
+    const prices = await fetchChartData();
+    await drawChart(prices);
+    document.getElementById('chart-container').style.display = 'block';
+    updatePage();
+  }
+  init();
+  // Refresh price and block every minute
+  setInterval(async () => {
+    updatePage();
+    blockData = await fetchBlockData();
+  }, 60000);
+
+  // Set CRUU message (all caps from user) and glitch overlay
+  const cruuMessage = `THIS IS WHAT YOU WANTED RIGHT<br>BUT YOU'RE NOT HERE YET<br>SO WHAT HAPPENS<br>WHEN IT HITS 4K<br>SOMETHING MAGICAL`;
+  const leftDiv = document.getElementById('left-message');
+  leftDiv.innerHTML = cruuMessage;
+  leftDiv.setAttribute('data-text', cruuMessage.replace(/<br>/g, ' '));
+
+  // Build empty Wordle grid
+  const wordleContainer = document.getElementById('wordle');
+  for (let r = 0; r < 6; r++) {
+    const row = document.createElement('div');
+    row.className = 'wordle-row';
+    for (let c = 0; c < 5; c++) {
+      const tile = document.createElement('div');
+      tile.className = 'wordle-tile';
+      row.appendChild(tile);
+    }
+    wordleContainer.appendChild(row);
+  }
+  const targetWord = 'HAVEN';
+  let currentRow = 0;
+  let currentTile = 0;
+  const guesses = Array(6).fill('');
+  document.addEventListener('keydown', function(event) {
+    const rows = wordleContainer.children;
+    if (event.key === 'Backspace') {
+      if (currentTile > 0) {
+        currentTile--;
+        guesses[currentRow] = guesses[currentRow].slice(0, -1);
+        const tile = rows[currentRow].children[currentTile];
+        tile.textContent = '';
+        tile.classList.remove('tile-correct','tile-present','tile-absent');
+      }
+    } else if (event.key === 'Enter') {
+      if (currentTile === 5) {
+        evaluateGuess();
+      }
+    } else if (/^[a-zA-Z]$/.test(event.key)) {
+      if (currentTile < 5) {
+        const letter = event.key.toUpperCase();
+        guesses[currentRow] += letter;
+        const tile = rows[currentRow].children[currentTile];
+        tile.textContent = letter;
+        currentTile++;
       }
     }
-    // draw nodes
-    nodes.forEach((node) => {
-      ctx.beginPath();
-      ctx.arc(node.x, node.y, 2, 0, Math.PI * 2);
-      ctx.fillStyle = happy ? '#fff' : '#66aaff';
-      ctx.fill();
-    });
-    requestAnimationFrame(draw);
+  });
+  function evaluateGuess() {
+    const guess = guesses[currentRow];
+    const rowTiles = wordleContainer.children[currentRow].children;
+    // Count letters in target
+    const counts = {};
+    for (const ch of targetWord) {
+      counts[ch] = (counts[ch] || 0) + 1;
+    }
+    const statuses = Array(5).fill('absent');
+    for (let i = 0; i < 5; i++) {
+      if (guess[i] === targetWord[i]) {
+        statuses[i] = 'correct';
+        counts[guess[i]]--;
+      }
+    }
+    for (let i = 0; i < 5; i++) {
+      if (statuses[i] !== 'correct' && targetWord.includes(guess[i]) && counts[guess[i]] > 0) {
+        statuses[i] = 'present';
+        counts[guess[i]]--;
+      }
+    }
+    for (let i = 0; i < 5; i++) {
+      const tile = rowTiles[i];
+      tile.classList.remove('tile-correct','tile-present','tile-absent');
+      if (statuses[i] === 'correct') tile.classList.add('tile-correct');
+      else if (statuses[i] === 'present') tile.classList.add('tile-present');
+      else tile.classList.add('tile-absent');
+    }
+    if (guess === targetWord) {
+      setTimeout(() => alert('Congratulations! You guessed the word!'), 200);
+      document.removeEventListener('keydown', arguments.callee);
+    } else {
+      currentRow++;
+      currentTile = 0;
+      if (currentRow >= 6) {
+        setTimeout(() => alert('Game over! The word was ' + targetWord), 200);
+        document.removeEventListener('keydown', arguments.callee);
+      }
+    }
   }
-    draw();
-}
+
+  /*
+   * Generative net art using p5.js
+   * Creates a flow field influenced by Perlin noise. The Ethereum block height and
+   * gas fees subtly influence the flow vector directions and colors. When the
+   * price crosses the happy threshold, the artwork becomes more vibrant.
+   */
+  let flowField;
+  let particles = [];
+  let cols, rows;
+  let inc = 0.05;
+  let zOff = 0;
+  const scale = 20; // size of each flow field cell
+  function setup() {
+    const canvas = createCanvas(windowWidth, windowHeight);
+    canvas.parent('p5-container');
+    colorMode(HSB, 360, 100, 100, 100);
+    cols = floor(width / scale);
+    rows = floor(height / scale);
+    flowField = new Array(cols * rows);
+    // create many particles
+    for (let i = 0; i < 600; i++) {
+      particles[i] = new Particle();
+    }
+    background(0);
+  }
+  function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+    cols = floor(width / scale);
+    rows = floor(height / scale);
+    flowField = new Array(cols * rows);
+    background(0);
+  }
+  function draw() {
+    // Transparent background to fade trails
+    background(0, 0, 0, 5);
+    let yOff = 0;
+    for (let y = 0; y < rows; y++) {
+      let xOff = 0;
+      for (let x = 0; x < cols; x++) {
+        const index = x + y * cols;
+        // base angle from noise
+        let angle = noise(xOff, yOff, zOff) * TWO_PI * 2;
+        // integrate block height and gas price into angle
+        if (blockData) {
+          angle += (blockData.height % 1000) * 0.0001;
+          angle += (blockData.base_fee || 0) * 0.0000000001;
+        }
+        const v = p5.Vector.fromAngle(angle);
+        v.setMag(1);
+        flowField[index] = v;
+        xOff += inc;
+      }
+      yOff += inc;
+    }
+    zOff += 0.003;
+    // update and show particles
+    for (let i = 0; i < particles.length; i++) {
+      particles[i].follow(flowField);
+      particles[i].update();
+      particles[i].edges();
+      particles[i].show();
+    }
+  }
+  class Particle {
+    constructor() {
+      this.pos = createVector(random(width), random(height));
+      this.prevPos = this.pos.copy();
+      this.vel = createVector(0, 0);
+      this.acc = createVector(0, 0);
+      this.maxSpeed = 2;
+    }
+    update() {
+      this.vel.add(this.acc);
+      this.vel.limit(this.maxSpeed);
+      this.pos.add(this.vel);
+      this.acc.mult(0);
+    }
+    follow(vectors) {
+      const x = floor(this.pos.x / scale);
+      const y = floor(this.pos.y / scale);
+      const index = x + y * cols;
+      const force = vectors[index];
+      if (force) this.applyForce(force);
+    }
+    applyForce(force) {
+      this.acc.add(force);
+    }
+    show() {
+      // Determine color based on position and global variables
+      let hueVal = (artHueOffset + frameCount * 0.5 + this.pos.x * 0.05) % 360;
+      if (document.body.classList.contains('happy')) {
+        hueVal = (hueVal + 120) % 360; // shift hue for happy state
+      }
+      stroke(hueVal, 80, 100, 30);
+      strokeWeight(1.5);
+      line(this.pos.x, this.pos.y, this.prevPos.x, this.prevPos.y);
+      this.updatePrev();
+    }
+    updatePrev() {
+      this.prevPos.x = this.pos.x;
+      this.prevPos.y = this.pos.y;
+    }
+    edges() {
+      if (this.pos.x > width) { this.pos.x = 0; this.updatePrev(); }
+      if (this.pos.x < 0)    { this.pos.x = width; this.updatePrev(); }
+      if (this.pos.y > height){ this.pos.y = 0; this.updatePrev(); }
+      if (this.pos.y < 0)    { this.pos.y = height; this.updatePrev(); }
+    }
+  }
 </script>
 </body>
 </html>
