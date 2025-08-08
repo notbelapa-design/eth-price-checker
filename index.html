@@ -1,314 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>ETH Price Checker</title>
-<style>
-/* Base styles */
-body {
-  margin: 0;
-  padding: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 100vh;
-  transition: background-color 0.8s ease, color 0.8s ease;
-  overflow-x: hidden;
-  position: relative;
-}
-
-h1 {
-  font-size: 2rem;
-  margin-top: 2rem;
-}
-
-p {
-  font-size: 1rem;
-  margin: 0.5rem;
-}
-
-#emoji {
-  font-size: 6rem;
-  margin-top: 3rem;
-}
-
-#chart-container {
-  width: 90%;
-  max-width: 700px;
-  margin-top: 2rem;
-}
-
-canvas {
-  width: 100% !important;
-  height: auto !important;
-}
-
-/* Sad/Happy themes */
-body.happy {
-  color: #0a662c;
-}
-
-body.happy::before {
-  content: '';
-  position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(60deg, #ff9a9e, #fecfef, #fad0c4, #fbc2eb);
-  background-size: 400% 400%;
-  animation: rainbow 20s linear infinite;
-  z-index: -3;
-}
-
-body.sad {
-  color: #e5e7eb;
-}
-
-body.sad::before {
-  content: '';
-  position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle at center, #2d3748, #1a202c, #000000);
-  animation: swirl 30s linear infinite;
-  z-index: -3;
-}
-
-@keyframes rainbow {
-  0%{background-position:0% 50%;}
-  50%{background-position:100% 50%;}
-  100%{background-position:0% 50%;}
-}
-
-@keyframes swirl {
-  from {transform: rotate(0deg);} 
-  to {transform: rotate(360deg);} 
-}
-
-/* Panel container for quote and wordle */
-#panel-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-start;
-  width: 90%;
-  max-width: 1200px;
-  margin-top: 3rem;
-  gap: 2rem;
-}
-
-#left-quote {
-  flex: 1;
-  min-width: 250px;
-  max-width: 55%;
-  font-size: 1.3rem;
-  font-weight: bold;
-  line-height: 1.3;
-  white-space: pre-wrap;
-  color: rgba(255,255,255,0.85);
-}
-
-body.happy #left-quote {
-  color: rgba(0,0,0,0.8);
-}
-
-#wordle {
-  flex: 1;
-  min-width: 220px;
-  max-width: 40%;
-  display: grid;
-  grid-template-rows: repeat(6, auto);
-  gap: 0.25rem;
-}
-
-.wordle-row {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0.25rem;
-}
-
-.wordle-tile {
-  width: 3rem;
-  height: 3rem;
-  border: 2px solid currentColor;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  color: inherit;
-}
-
-.wordle-tile.correct {
-  background-color: #538d4e;
-  color: #fff;
-  border-color: #538d4e;
-}
-
-body.happy .wordle-tile {
-  border-color: rgba(0,0,0,0.3);
-}
-
-/* Large CRUU message */
-#cruu-message {
-  position: fixed;
-  bottom: 5%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.3rem;
-  font-weight: bold;
-  text-align: center;
-  letter-spacing: 3px;
-  line-height: 1.3;
-  max-width: 90%;
-  color: rgba(255,255,255,0.4);
-  text-shadow: 0 0 10px rgba(0,0,0,0.6);
-  z-index: 2;
-  pointer-events: none;
-}
-
-body.happy #cruu-message {
-  color: rgba(0,0,0,0.5);
-  text-shadow: 0 0 10px rgba(255,255,255,0.5);
-}
-
-/* Orb decorative element */
-#orb {
-  position: fixed;
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background: radial-gradient(circle at center, rgba(255,255,255,0.9), rgba(255,255,255,0) 70%);
-  animation: orbMove 40s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 1;
-}
-
-@keyframes orbMove {
-  0%   { top: 10%; left: 20%; transform: scale(0.8); }
-  25%  { top: 20%; left: 80%; transform: scale(1.2); }
-  50%  { top: 75%; left: 60%; transform: scale(1.0); }
-  75%  { top: 85%; left: 15%; transform: scale(1.3); }
-  100% { top: 30%; left: 50%; transform: scale(0.9); }
-}
-
-/* Party confetti canvas overlay */
-#confetti-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>ETH Price Checker</title>
+  <!-- Chart.js for the price chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <!-- Canvas Confetti for celebration when price exceeds threshold -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-color: #050b22;
+      color: #fff;
+      transition: background 2s;
+    }
+    /* Happy state rainbow gradient background */
+    body.happy {
+      background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0, #7f00ff, #e100ff);
+      background-size: 600% 600%;
+      animation: gradientMove 10s ease infinite;
+    }
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    #emoji {
+      font-size: 6rem;
+      margin-top: 2rem;
+    }
+    h1 {
+      margin: 0;
+      margin-top: 1rem;
+      font-size: 2rem;
+    }
+    #price {
+      font-size: 1.2rem;
+      margin-top: 0.5rem;
+    }
+    #chart-container {
+      width: 80%;
+      max-width: 600px;
+      margin-top: 1rem;
+      display: none;
+    }
+    /* Left side message */
+    #left-message {
+      position: absolute;
+      left: 2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 2rem;
+      line-height: 1.2;
+      max-width: 40%;
+      pointer-events: none;
+    }
+    /* Wordle board on the right */
+    #wordle {
+      position: absolute;
+      right: 2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: grid;
+      grid-template-rows: repeat(6, 1fr);
+      gap: 0.3rem;
+    }
+    .wordle-row {
+      display: flex;
+      gap: 0.3rem;
+    }
+    .wordle-tile {
+      width: 3rem;
+      height: 3rem;
+      border: 2px solid #777;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+  </style>
 </head>
-<body class="loading">
-<div id="emoji">⏳</div>
-<h1>Checking ETH price...</h1>
+<body>
+<div id="emoji"></div>
+<h1 id="header">Checking ETH price...</h1>
 <p id="price"></p>
-<p id="update-note">(Prices update every minute. Data from CoinGecko.)</p>
-<div id="chart-container" style="display:none;">
+<div id="chart-container">
   <canvas id="chart"></canvas>
 </div>
-<div id="panel-container">
-  <div id="left-quote">
-WE ARE MOVING TOWARDS A WORLD WHERE 5 CORPORATIONS CONTROL THE ENTIRE INTERNET. AND EVERYTHING WE CREATE ON IT.
-
-ACTUALLY, WE'RE ALREADY THERE. SPIRALING FURTHER INTO THE ALGO. SHOUTING FOR ATTENTION.
-
-AND A BIT OF MONEY IF WE'RE LOUD ENOUGH.
-
-TRAPPED IN THE PLATFORMS WE CREATED. WHO WOULD THEY BE WITHOUT US.
-
-OUR IMAGINATION AND CREATIVE ENERGY. SPENT THERE.
-
-FOR WHAT AND FOR WHOM?
-  </div>
-  <div id="wordle">
-    <div class="wordle-row">
-      <div class="wordle-tile correct">H</div>
-      <div class="wordle-tile correct">A</div>
-      <div class="wordle-tile correct">V</div>
-      <div class="wordle-tile correct">E</div>
-      <div class="wordle-tile correct">N</div>
-    </div>
-    <div class="wordle-row">
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-    </div>
-    <div class="wordle-row">
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-    </div>
-    <div class="wordle-row">
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-    </div>
-    <div class="wordle-row">
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-    </div>
-    <div class="wordle-row">
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-      <div class="wordle-tile"></div>
-    </div>
-  </div>
-</div>
-<div id="cruu-message">THIS IS WHAT YOU WANTED RIGHT BUT YOU'RE NOT HERE YET SO WHAT HAPPENS WHEN IT HITS 4K SOMETHING MAGICAL</div>
-<div id="orb"></div>
+<div id="left-message"></div>
+<div id="wordle"></div>
+<!-- Canvas for confetti; hidden until triggered -->
 <canvas id="confetti-canvas"></canvas>
-<!-- Chart.js library -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<!-- Confetti library -->
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 <script>
-async function fetchEthPrice() {
-  const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
-  const data = await response.json();
+const happyThreshold = 4000; // price threshold for happy state
+
+// Fetch current ETH price
+async function fetchPrice() {
+  const resp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
+  const data = await resp.json();
   return data.ethereum.usd;
 }
 
+// Fetch historical prices for chart (7 days)
 async function fetchChartData() {
-  const response = await fetch('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=7&interval=daily');
-  const data = await response.json();
-  return data.prices; // array of [timestamp, price]
+  const resp = await fetch('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=7&interval=daily');
+  const data = await resp.json();
+  return data.prices;
 }
 
-let chart; // global chart instance
-function drawChart(prices) {
+let chart; // Chart.js instance
+
+async function drawChart(prices) {
   const ctx = document.getElementById('chart').getContext('2d');
   const labels = prices.map(p => {
-    const date = new Date(p[0]);
-    return date.toLocaleDateString(undefined, { month:'short', day:'numeric' });
+    const d = new Date(p[0]);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   });
   const priceData = prices.map(p => Math.round(p[1] * 100) / 100);
-  const thresholdData = priceData.map(() => 4000);
-  if(chart) {
-    chart.destroy();
-  }
+  const thresholdData = labels.map(() => happyThreshold);
+  if (chart) chart.destroy();
   chart = new Chart(ctx, {
     type: 'line',
     data: {
@@ -320,40 +139,43 @@ function drawChart(prices) {
           borderColor: 'orange',
           backgroundColor: 'rgba(255,165,0,0.2)',
           tension: 0.3,
-          fill: false
         },
         {
           label: 'Threshold ($4000)',
           data: thresholdData,
           borderColor: 'red',
-          borderDash: [5,5],
-          pointRadius: 0,
-          tension: 0,
-          fill: false
-        }
-      ]
+          borderDash: [5, 5],
+          fill: false,
+        },
+      ],
     },
     options: {
-      plugins: {
-        legend: {
-          labels: { color: getComputedStyle(document.body).color }
-        }
-      },
       scales: {
         y: {
-          ticks: { color: getComputedStyle(document.body).color },
-          beginAtZero: false
+          beginAtZero: false,
+          ticks: {
+            color: getComputedStyle(document.body).color,
+          },
         },
         x: {
-          ticks: { color: getComputedStyle(document.body).color }
-        }
-      }
-    }
+          ticks: {
+            color: getComputedStyle(document.body).color,
+          },
+        },
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: getComputedStyle(document.body).color,
+          },
+        },
+      },
+    },
   });
 }
 
 function updateChartColors() {
-  if(chart) {
+  if (chart) {
     const color = getComputedStyle(document.body).color;
     chart.options.plugins.legend.labels.color = color;
     chart.options.scales.x.ticks.color = color;
@@ -362,53 +184,145 @@ function updateChartColors() {
   }
 }
 
-function launchConfetti() {
-  const myConfetti = confetti.create(document.getElementById('confetti-canvas'), { resize: true, useWorker: true });
-  myConfetti({
-    particleCount: 300,
-    spread: 90,
-    origin: { y: 0.6 }
-  });
-}
-
+// Update page based on current price
 async function updatePage() {
-  const price = await fetchEthPrice();
-  const priceEl = document.getElementById('price');
-  priceEl.textContent = 'Current price: $' + price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const price = await fetchPrice();
+  document.getElementById('price').textContent = 'Current price: $' + price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const emojiEl = document.getElementById('emoji');
-  const headerEl = document.querySelector('h1');
-  const bodyEl = document.body;
-
-  if (price >= 4000) {
+  const headerEl = document.getElementById('header');
+  if (price >= happyThreshold) {
     emojiEl.textContent = '🥳';
     headerEl.textContent = 'ETH is above $4,000!';
-    bodyEl.classList.remove('sad');
-    bodyEl.classList.add('happy');
+    document.body.classList.add('happy');
     launchConfetti();
   } else {
     emojiEl.textContent = '😢';
     headerEl.textContent = 'ETH is below $4,000';
-    bodyEl.classList.remove('happy');
-    bodyEl.classList.add('sad');
+    document.body.classList.remove('happy');
   }
   updateChartColors();
 }
 
-// initial load function
-async function init() {
-  try {
-    const prices = await fetchChartData();
-    drawChart(prices);
-    document.getElementById('chart-container').style.display = 'block';
-  } catch (e) {
-    console.error('Error loading chart data', e);
-  }
-  await updatePage();
+// Launch confetti when price is above threshold
+function launchConfetti() {
+  const myConfetti = confetti.create(document.getElementById('confetti-canvas'), { resize: true, useWorker: true });
+  myConfetti({
+    particleCount: 200,
+    spread: 90,
+    origin: { y: 0.6 },
+  });
 }
 
-// start updates
+// Initialize page
+async function init() {
+  const prices = await fetchChartData();
+  drawChart(prices);
+  document.getElementById('chart-container').style.display = 'block';
+  updatePage();
+}
 init();
+// Refresh price every minute
 setInterval(updatePage, 60000);
+
+// Set the left-side message (CRUU style)
+const leftMessage = `THIS IS WHAT YOU WANTED RIGHT<br>BUT YOU'RE NOT HERE YET<br>SO WHAT HAPPENS<br>WHEN IT HITS 4K<br>SOMETHING MAGICAL`;
+document.getElementById('left-message').innerHTML = leftMessage;
+
+// Build Wordle board
+const wordleContainer = document.getElementById('wordle');
+for (let r = 0; r < 6; r++) {
+  const rowDiv = document.createElement('div');
+  rowDiv.className = 'wordle-row';
+  for (let c = 0; c < 5; c++) {
+    const tile = document.createElement('div');
+    tile.className = 'wordle-tile';
+    rowDiv.appendChild(tile);
+  }
+  wordleContainer.appendChild(rowDiv);
+}
+
+// Wordle game logic
+const targetWord = 'HAVEN';
+let currentRow = 0;
+let currentTile = 0;
+const guesses = Array(6).fill('');
+document.addEventListener('keydown', function(event) {
+  const rows = wordleContainer.children;
+  if (event.key === 'Backspace') {
+    if (currentTile > 0) {
+      currentTile--;
+      guesses[currentRow] = guesses[currentRow].slice(0, -1);
+      const tile = rows[currentRow].children[currentTile];
+      tile.textContent = '';
+      tile.style = '';
+    }
+  } else if (event.key === 'Enter') {
+    if (currentTile === 5) {
+      evaluateGuess();
+    }
+  } else if (/^[a-zA-Z]$/.test(event.key)) {
+    if (currentTile < 5) {
+      const letter = event.key.toUpperCase();
+      guesses[currentRow] += letter;
+      const tile = rows[currentRow].children[currentTile];
+      tile.textContent = letter;
+      currentTile++;
+    }
+  }
+});
+
+function evaluateGuess() {
+  const guess = guesses[currentRow];
+  const rowTiles = wordleContainer.children[currentRow].children;
+  // Count letters in target word
+  const letterCount = {};
+  for (const ch of targetWord) {
+    letterCount[ch] = (letterCount[ch] || 0) + 1;
+  }
+  const statuses = Array(5).fill('absent');
+  // First pass: correct positions
+  for (let i = 0; i < 5; i++) {
+    if (guess[i] === targetWord[i]) {
+      statuses[i] = 'correct';
+      letterCount[guess[i]]--;
+    }
+  }
+  // Second pass: present letters
+  for (let i = 0; i < 5; i++) {
+    if (statuses[i] !== 'correct' && targetWord.includes(guess[i]) && letterCount[guess[i]] > 0) {
+      statuses[i] = 'present';
+      letterCount[guess[i]]--;
+    }
+  }
+  // Apply colors based on statuses
+  for (let i = 0; i < 5; i++) {
+    const tile = rowTiles[i];
+    if (statuses[i] === 'correct') {
+      tile.style.background = '#538d4e';
+      tile.style.borderColor = '#538d4e';
+      tile.style.color = '#fff';
+    } else if (statuses[i] === 'present') {
+      tile.style.background = '#b59f3b';
+      tile.style.borderColor = '#b59f3b';
+      tile.style.color = '#fff';
+    } else {
+      tile.style.background = '#3a3a3c';
+      tile.style.borderColor = '#3a3a3c';
+      tile.style.color = '#fff';
+    }
+  }
+  if (guess === targetWord) {
+    setTimeout(() => alert('Congratulations! You guessed the word!'), 100);
+    document.removeEventListener('keydown', arguments.callee);
+  } else {
+    currentRow++;
+    currentTile = 0;
+    if (currentRow >= 6) {
+      setTimeout(() => alert('Game over! The word was ' + targetWord), 100);
+      document.removeEventListener('keydown', arguments.callee);
+    }
+  }
+}
 </script>
 </body>
 </html>
