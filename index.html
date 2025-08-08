@@ -169,6 +169,40 @@
       display: none;
     }
 
+    /* Navigation bar for toggling between game and chart */
+    #nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px 0;
+      z-index: 10;
+    }
+    #nav-bar button {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #nav-bar button:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+    #nav-bar button.active {
+      background: rgba(255, 255, 255, 0.35);
+    }
+    /* Hide game and chart sections by default; JS toggles them */
+    #game-section, #chart-section {
+      display: none;
+    }
+
     /* p5 canvas should sit behind content */
     #p5-container canvas {
       position: fixed;
@@ -196,10 +230,21 @@
   </div>
   <div id="middle">
     <div id="left-message" data-text=""></div>
-    <div id="wordle"></div>
+    <!-- Game section wraps the Wordle board and can be toggled via navigation -->
+    <div id="game-section">
+      <div id="wordle"></div>
+    </div>
+    <!-- Chart section wraps the chart container -->
+    <div id="chart-section">
+      <div id="chart-container">
+        <canvas id="chart"></canvas>
+      </div>
+    </div>
   </div>
-  <div id="chart-container">
-    <canvas id="chart"></canvas>
+  <!-- Bottom navigation bar to toggle between chart and game -->
+  <div id="nav-bar">
+    <button id="nav-game">Game</button>
+    <button id="nav-chart" class="active">Chart</button>
   </div>
 </div>
 <!-- Confetti canvas (used internally by confetti library) -->
@@ -348,7 +393,8 @@
     // Draw chart
     const prices = await fetchChartData();
     await drawChart(prices);
-    document.getElementById('chart-container').style.display = 'block';
+    // Show chart section by default (chart-container inside chart-section)
+    document.getElementById('chart-section').style.display = 'block';
     updatePage();
   }
   init();
@@ -357,6 +403,29 @@
     updatePage();
     blockData = await fetchBlockData();
   }, 60000);
+
+  // Navigation toggling between game and chart
+  document.addEventListener('DOMContentLoaded', () => {
+    const gameSection = document.getElementById('game-section');
+    const chartSection = document.getElementById('chart-section');
+    const btnGame = document.getElementById('nav-game');
+    const btnChart = document.getElementById('nav-chart');
+    // Start with chart visible and button active
+    chartSection.style.display = 'block';
+    btnChart.classList.add('active');
+    btnGame.addEventListener('click', () => {
+      gameSection.style.display = 'block';
+      chartSection.style.display = 'none';
+      btnGame.classList.add('active');
+      btnChart.classList.remove('active');
+    });
+    btnChart.addEventListener('click', () => {
+      chartSection.style.display = 'block';
+      gameSection.style.display = 'none';
+      btnChart.classList.add('active');
+      btnGame.classList.remove('active');
+    });
+  });
 
   /**
    * Attention banner cycling
@@ -516,8 +585,8 @@
     }
     background(0);
 
-    // Create emoji particles floating across the canvas
-    for (let i = 0; i < 40; i++) {
+    // Create emoji particles floating across the canvas (reduced count for minimal clutter)
+    for (let i = 0; i < 20; i++) {
       emojiParticles.push(new EmojiParticle());
     }
   }
@@ -570,8 +639,8 @@
     drawPriceArt();
 
     // Occasionally overlay Kawano-inspired geometric pattern for absurd net art
-    // Pattern displays for a few seconds every ~20 seconds
-    if (frameCount % 1200 < 180) {
+    // Pattern displays briefly every ~30 seconds to avoid clutter
+    if (frameCount % 1800 < 120) {
       drawKawanoPattern();
     }
   }
