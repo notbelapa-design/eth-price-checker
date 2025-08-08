@@ -65,16 +65,16 @@
     /* Middle area: left message and Wordle board side‑by‑side */
     #middle {
       display: flex;
-      justify-content: space-between;
-      width: 100%;
       flex-wrap: wrap;
+      width: 100%;
+      justify-content: center;
+      gap: 2rem;
       margin-bottom: 2rem;
     }
     /* Left message with CRUU aesthetic: large, uppercase, glitchy */
     #left-message {
-      flex: 1;
+      flex: 1 1 45%;
       min-width: 280px;
-      margin-right: 1rem;
       font-size: 1.8rem;
       line-height: 1.25;
       text-transform: uppercase;
@@ -119,7 +119,7 @@
     }
     /* Wordle board styling */
     #wordle {
-      flex: 1;
+      flex: 1 1 45%;
       min-width: 280px;
       display: grid;
       grid-template-rows: repeat(6, auto);
@@ -168,6 +168,37 @@
       /* blending to unify with background */
       mix-blend-mode: screen;
     }
+
+    /* Concept section styling */
+    #concept-section {
+      width: 100%;
+      max-width: 900px;
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      z-index: 2;
+    }
+    .concept-card {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      padding: 1rem;
+      backdrop-filter: blur(4px);
+    }
+    .concept-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+    .concept-desc {
+      font-size: 0.9rem;
+      line-height: 1.4;
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>
@@ -184,6 +215,33 @@
   </div>
   <div id="chart-container">
     <canvas id="chart"></canvas>
+  </div>
+  <!-- Concept section with curated ideas from previous discussions -->
+  <div id="concept-section">
+    <div class="concept-card">
+      <div class="concept-title">176. Meme Arbitrage</div>
+      <div class="concept-desc">Hitch memes to standards bodies and protocol news. When a symbol receives institutional attention, ride the liquidity of attention.</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-title">177. Provenance Cameras</div>
+      <div class="concept-desc">Back creator ecosystems with signing cameras and zero‑knowledge proofs. Prove authenticity and edits without exposing raw files.</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-title">178. Prediction‑Rails for Culture</div>
+      <div class="concept-desc">Use prediction markets like Polymarket as sentiment pre‑markets. If odds move before feeds, expect narrative spillover and trade the bleed.</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-title">179. Floor‑Liquidity Offers</div>
+      <div class="concept-desc">Accumulate via collection offers instead of sweeping floors. You set the price, keep fees low and avoid run‑up slippage.</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-title">180. Fees→Zero Strategy</div>
+      <div class="concept-desc">Marketplaces compete fees to zero. Build on attention, curation and tooling—if your edge is fee‑based, it dies.</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-title">181. Money‑Law‑Land Stack</div>
+      <div class="concept-desc">Digital money (Bitcoin), digital law (Ethereum) and digital land (Urbit) form a stack. Decide where your product lives—payments, state/logic or sovereign compute—and design accordingly.</div>
+    </div>
   </div>
 </div>
 <!-- Confetti canvas (used internally by confetti library) -->
